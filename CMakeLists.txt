@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.2)
 
-project(SDL2Test)
+
+set(PROJECT_NAME sdl2_test)
+project(${PROJECT_NAME})
 
 # Meta information about the project #### [ADAPT]
 set(META_PROJECT_NAME "SDL2 Template")
@@ -33,7 +35,6 @@ if (COMPILER STREQUAL "CLANG")
     SET(CMAKE_CXX_COMPILER "clang++")
     SET(CMAKE_C_COMPILER "clang")
     SET(CMAKE_CXX_FLAGS "-Wall -Wextra")
-
 elseif (COMPILER STREQUAL "GNU")
     MESSAGE(STATUS "Compiling with GNU g++")
     SET(CMAKE_CXX_COMPILER "g++")
@@ -44,42 +45,48 @@ elseif (COMPILER STREQUAL "MSVC")
 
 endif ()
 
-
 #set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake_modules")
 
-add_executable(SDL2Test src/main.cpp)
-
+add_executable(${PROJECT_NAME} src/main.cpp)
 INCLUDE(FindPkgConfig)
 
 #pkg_check_modules(FREETYPE2 REQUIRED freetype2)
 #pkg_check_modules(HARFBUZZ REQUIRED harfbuzz)
-
 pkg_check_modules(SDL2 REQUIRED sdl2)
 pkg_check_modules(SDL2_IMAGE REQUIRED sdl2_image)
 pkg_check_modules(SDL2_MIXER REQUIRED sdl2_mixer)
+pkg_check_modules(GLM REQUIRED glm)
+pkg_check_modules(GLEW REQUIRED glew)
+
+# OpenGL
+find_package(OpenGL REQUIRED)
+target_link_libraries(${PROJECT_NAME} ${OPENGL_gl_LIBRARY})
+target_include_directories(${PROJECT_NAME} PUBLIC ${OPENGL_INCLUDE_DIR})
+
+# GL Extension Wrangler (GLEW)
+find_package(GLEW REQUIRED)
+target_link_libraries(${PROJECT_NAME} ${GLEW_LIBRARIES})
+target_include_directories(${PROJECT_NAME} PUBLIC ${GLEW_INCLUDE_DIRS})
 
 
-include_directories(${SDL2_INCLUDE_DIRS}
+# SDL2
+find_package(SDL2 REQUIRED)
+target_link_libraries(${PROJECT_NAME}
+        ${SDL2_LIBRARIES}
+        ${SDL2_IMAGE_LIBRARIES}
+        ${SDL2_MIXER_LIBRARIES}
+        #        ${FREETYPE2_LIBRARIES}
+        #        ${HARFBUZZ_LIBRARIES}
+        )
+target_include_directories(
+        ${PROJECT_NAME} PUBLIC
+        ${SDL2_INCLUDE_DIRS}
         ${SDL2_IMAGE_INCLUDE_DIRS}
         ${SDL2_MIXER_INCLUDE_DIRS}
         #                    ${FREETYPE2_INCLUDE_DIRS}
         #                    ${HARFBUZZ_INCLUDE_DIRS}
         )
 
-link_directories(
-        ${SDL2_LIBRARY_DIRS}
-        ${SDL2_IMAGE_LIBRARY_DIRS}
-        ${SDL2_MIXER_LIBRARY_DIRS}
-        #        ${FREETYPE2_LIBRARY_DIRS}
-        #        ${HARFBUZZ_LIBRARY_DIRS}
-)
-
-target_link_libraries(SDL2Test ${SDL2_LIBRARIES}
-        ${SDL2_IMAGE_LIBRARIES}
-        ${SDL2_MIXER_LIBRARIES}
-        #        ${FREETYPE2_LIBRARIES}
-        #        ${HARFBUZZ_LIBRARIES}
-        )
 
 
 MESSAGE(STATUS "SDL2 LIBRARIES: " ${SDL2_LIBRARIES})
